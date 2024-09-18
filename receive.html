@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receive Content - ShareIt</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Receive Content</h1>
+            <p id="msgdis">View the shared files and messages here!</p>
+        </header>
+        <main class="main-content">
+            <div id="messageDisplay" class="message-displayr">
+                <input type="text" id="Id" placeholder="Id" required>
+                <input type="text" id="Password" placeholder="Password" required>
+               <br> <a href="#" id="check" class="button send">Check</a>
+            <a href="index.html" class="button receive">Back to Home</a>
+            </div>
+            <div id="message-display" class="message-display"></div>
+               
+            </div> 
+        </main>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+        const firebaseConfig = {
+          apiKey: "AIzaSyApXmOU_MW6Dd-gdFTwtsoYDt8SoMuLe_I",
+          authDomain: "fileshareing-1774a.firebaseapp.com",
+          databaseURL: "https://fileshareing-1774a-default-rtdb.firebaseio.com",
+          projectId: "fileshareing-1774a",
+          storageBucket: "fileshareing-1774a.appspot.com",
+          messagingSenderId: "747633823888",
+          appId: "1:747633823888:web:18ffc916a4fcea288d4815",
+          measurementId: "G-K0HRDC215E"
+        };
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        import {getDatabase,ref,set,get,child,update,remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js"
+        import {getStorage,ref as stref,uploadBytesResumable,uploadBytes ,getDownloadURL} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
+        const db = getDatabase();
+        const storage = getStorage();
+        const storageref = stref(storage,"files/")
+        document.getElementById("check").addEventListener("click",check);
+        document.getElementById("message-display").style.visibility='hidden'
+        let userid = document.getElementById("Id");
+        let userpass = document.getElementById("Password");
+        function check(){
+            try{
+            let uid = userid.value;
+            let upass = userpass.value;
+            let bdref = ref(db);
+            get(child(bdref,uid)).then((snapshot)=>{
+                if(snapshot.exists()){
+                    if(upass == "")upass = "none"
+                    if(snapshot.val().pass == upass){
+                        document.getElementById("msgdis").innerText = "Files gatherd From "+uid+" are showed in below"
+                        document.getElementById("msgdis").style.color = "green"
+                        document.getElementById("message-display").innerHTML = `<a target="_blank" href="${snapshot.val().link}" download>${snapshot.val().msg}</a>`
+                        document.getElementById("message-display").style.visibility='visible'
+}
+                    else{
+                         document.getElementById("msgdis").innerText = "wrong password"
+                        document.getElementById("msgdis").style.color = "red"
+                    }
+                }
+                else{
+                     document.getElementById("msgdis").innerText = "There is no id with "+uid
+                        document.getElementById("msgdis").style.color = "red"
+                }
+            })
+        }catch(e){
+            if(userid.value == ""){
+                document.getElementById("msgdis").innerText = "Please enter Id"
+                document.getElementById("msgdis").style.color = "red"
+            }
+            else{
+                document.getElementById("msgdis").innerText = "Something went wrong"
+                document.getElementById("msgdis").style.color = "red"
+            }
+        }
+        }
+    </script>
+</body>
+</html>

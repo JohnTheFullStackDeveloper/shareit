@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Content - ShareIt</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Send Content</h1>
+            <p id="msgdis">Share files and messages instantly!</p>
+        </header>
+        <main class="main-content">
+            <div class="input-section">
+                <input type="text" id="Id" placeholder="Id" required>
+                <input type="text" id="Password" placeholder="Password" required>
+                <input type="text" id="messageInput" placeholder="File Name" required>
+                <input type="file" id="fileInput" required/>
+                <button id="sendc" class="button send">Send</button>
+                <a href="index.html" class="button receive">Back to Home</a>
+                <button id="delete" class="button">Delete</button>
+            </div>
+        </main>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+        const firebaseConfig = {
+          apiKey: "AIzaSyApXmOU_MW6Dd-gdFTwtsoYDt8SoMuLe_I",
+          authDomain: "fileshareing-1774a.firebaseapp.com",
+          databaseURL: "https://fileshareing-1774a-default-rtdb.firebaseio.com",
+          projectId: "fileshareing-1774a",
+          storageBucket: "fileshareing-1774a.appspot.com",
+          messagingSenderId: "747633823888",
+          appId: "1:747633823888:web:18ffc916a4fcea288d4815",
+          measurementId: "G-K0HRDC215E"
+        };
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        import {getDatabase,ref,set,get,child,update,remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js"
+        import {getStorage,deleteObject,ref as stref,uploadBytesResumable,uploadBytes ,getDownloadURL} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
+        const db = getDatabase();
+        const storage = getStorage();
+        var storageref = stref(storage,"files/")
+        document.getElementById("sendc").addEventListener("click",send);
+        let cId = document.getElementById("Id");
+        let cPass = document.getElementById("Password");
+        let cMsg = document.getElementById("messageInput");
+        let cFile = document.getElementById("fileInput");
+
+        var file = null;
+        function send() {
+                try {
+                    document.getElementById("sendc").innerHTML = `<div class="load"></div>`
+                    document.getElementById("sendc").disabled = true
+                    get(child(ref(db), cId.value)).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            document.getElementById("msgdis").innerText = `already a user with ${cId.value}`
+                            document.getElementById("msgdis").style.color = "red"
+                            document.getElementById("sendc").disabled = false
+                            document.getElementById("sendc").innerHTML = `Send`
+                        }
+                        else if (file == null) {
+                            document.getElementById("msgdis").innerText = `Please select a File to Share`
+                            document.getElementById("msgdis").style.color = "red"
+                            document.getElementById("sendc").disabled = false
+                            document.getElementById("sendc").innerHTML = `Send`
+                        }
+                        else {
+                            if (cMsg.value == "") cMsg.value = "unknown"
+                            if (cPass.value == "") cPass.value = "none"
+                            storageref = stref(storage, cId.value)
+                            uploadBytes(storageref, file).then((snapshot) => {
+                                getDownloadURL(storageref).then((url) => {
+                                    set(ref(db, cId.value), {
+                                        pass: cPass.value,
+                                        msg: cMsg.value,
+                                        link: url
+                                    })
+                                    document.getElementById("msgdis").innerText = `Send Successfully`
+                                    document.getElementById("msgdis").style.color = "green"
+                                    document.getElementById("sendc").disabled = false
+                                    document.getElementById("sendc").innerHTML = `Send`
+                                    file = null
+                                }).catch((e) => {
+                                    document.getElementById("msgdis").innerText = `Something is wrong please try again`
+                                    document.getElementById("msgdis").style.color = "red"
+                                    document.getElementById("sendc").disabled = false
+                                    document.getElementById("sendc").innerHTML = `Send`
+                                })
+                            })
+                        }
+                    })
+
+                } catch (e) {
+                    document.getElementById("sendc").disabled = false
+                    document.getElementById("sendc").innerHTML = `Send`
+                    if(cId.value == ""){
+                    document.getElementById("msgdis").innerText = `Please enter a Id`
+                    }
+                    else{
+                    document.getElementById("msgdis").innerText = `Id can't contain "." , "#" , "$" , "[" , or "]"`
+                    }
+                    document.getElementById("msgdis").style.color = "red"
+                }
+            }
+        document.getElementById("delete").addEventListener("click",deletefrom)
+        function deletefrom(){
+            try{
+            get(child(ref(db),cId.value)).then((snapshot)=>{
+                if(snapshot.exists()){
+                    if(cPass.value == "")cPass.value = "none"
+                if(snapshot.val().pass == cPass.value){
+                    remove(child(ref(db),cId.value)).then(()=>{
+                        cPass.value = ""
+                        let storageref = stref(storage, cId.value)
+                        deleteObject(storageref)
+                        document.getElementById("msgdis").innerText = `Deleted Successfully`
+                        document.getElementById("msgdis").style.color = "green"
+                    })
+                }
+                else{
+                    document.getElementById("msgdis").innerText = `Wrong Password`
+                    document.getElementById("msgdis").style.color = "red"
+                }
+            }
+            else{
+                document.getElementById("msgdis").innerText = `There is no user name with ${cId.value}`
+                document.getElementById("msgdis").style.color = "red"
+            }
+            })
+        }catch(e){
+            if(cId.value == ""){
+                document.getElementById("msgdis").innerText = `Please enter Id`
+                document.getElementById("msgdis").style.color = "red"
+            }
+            else{
+                document.getElementById("msgdis").innerText = `Please Provide Correct Id`
+                document.getElementById("msgdis").style.color = "red"
+            }
+        }
+        }
+        cFile.onchange = function getfile(e){
+            file = e.target.files[0];
+        }
+      </script>
+</body>
+</html>

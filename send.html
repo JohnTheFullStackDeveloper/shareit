@@ -79,6 +79,8 @@
                                         msg: cMsg.value,
                                         link: url
                                     })
+                                    cMsg.value = ""
+                                    cPass.value = ""
                                     document.getElementById("msgdis").innerText = `Send Successfully`
                                     document.getElementById("msgdis").style.color = "green"
                                     document.getElementById("sendc").disabled = false

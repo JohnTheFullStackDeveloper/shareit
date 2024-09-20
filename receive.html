@@ -19,6 +19,7 @@
                <br> <a href="#" id="check" class="button send">Check</a>
             <a href="index.html" class="button receive">Back to Home</a>
             </div>
+            <h3 id="messagefromfiles"></h3>
             <div id="message-display" class="message-display"></div>
                
             </div> 
@@ -40,10 +41,10 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         import {getDatabase,ref,set,get,child,update,remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js"
-        import {getStorage,ref as stref,uploadBytesResumable,uploadBytes ,getDownloadURL} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
+        import {getStorage,ref as stref,uploadBytesResumable,uploadBytes,listAll ,getDownloadURL} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
         const db = getDatabase();
         const storage = getStorage();
-        const storageref = stref(storage,"files/")
+        
         document.getElementById("check").addEventListener("click",check);
         document.getElementById("message-display").style.visibility='hidden'
         let userid = document.getElementById("Id");
@@ -52,15 +53,24 @@
             try{
             let uid = userid.value;
             let upass = userpass.value;
+            let storageref = stref(storage,uid)
             let bdref = ref(db);
             get(child(bdref,uid)).then((snapshot)=>{
                 if(snapshot.exists()){
                     if(upass == "")upass = "none"
+                    if(snapshot.val().pass == "none")upass = "none"
                     if(snapshot.val().pass == upass){
                         document.getElementById("msgdis").innerText = "Files gatherd From "+uid+" are showed in below"
                         document.getElementById("msgdis").style.color = "green"
-                        document.getElementById("message-display").innerHTML = `<a target="_blank" href="${snapshot.val().link}" download>${snapshot.val().msg}</a>`
-                        document.getElementById("message-display").style.visibility='visible'
+                        document.getElementById("messagefromfiles").innerText = `${snapshot.val().msg}`
+                        listAll(storageref).then((res)=>{
+                            res.items.forEach((file)=>{
+                                getDownloadURL(file).then((url)=>{
+                                document.getElementById("message-display").style.visibility='visible'
+                                document.getElementById("message-display").innerHTML = document.getElementById("message-display").innerHTML +`<a target="_blank" href="${url}" download>${file.name}</a>`
+                                })
+                            })
+                        })
 }
                     else{
                          document.getElementById("msgdis").innerText = "wrong password"

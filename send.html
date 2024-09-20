@@ -14,10 +14,10 @@
         </header>
         <main class="main-content">
             <div class="input-section">
-                <input type="text" id="Id" placeholder="Id" required>
-                <input type="text" id="Password" placeholder="Password" required>
-                <input type="text" id="messageInput" placeholder="File Name" required>
-                <input type="file" id="fileInput" required/>
+                <input type="text" id="Id" placeholder="Id" >
+                <input type="text" id="Password" placeholder="Password" >
+                <input type="text" id="messageInput" placeholder="Message" >
+                <input type="file" id="fileInput" multiple="multiple" />
                 <button id="sendc" class="button send">Send</button>
                 <a href="index.html" class="button receive">Back to Home</a>
                 <button id="delete" class="button">Delete</button>
@@ -40,7 +40,7 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         import {getDatabase,ref,set,get,child,update,remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js"
-        import {getStorage,deleteObject,ref as stref,uploadBytesResumable,uploadBytes ,getDownloadURL} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
+        import {getStorage,deleteObject,ref as stref,uploadBytesResumable,uploadBytes,listAll,getDownloadURL} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
         const db = getDatabase();
         const storage = getStorage();
         var storageref = stref(storage,"files/")
@@ -50,8 +50,11 @@
         let cMsg = document.getElementById("messageInput");
         let cFile = document.getElementById("fileInput");
 
-        var file = null;
+        var filenum = 0;
+        var filenames = [];
+        var files = []
         function send() {
+
                 try {
                     document.getElementById("sendc").innerHTML = `<div class="load"></div>`
                     document.getElementById("sendc").disabled = true
@@ -62,37 +65,37 @@
                             document.getElementById("sendc").disabled = false
                             document.getElementById("sendc").innerHTML = `Send`
                         }
-                        else if (file == null) {
+                        else if (filenum == 0) {
                             document.getElementById("msgdis").innerText = `Please select a File to Share`
                             document.getElementById("msgdis").style.color = "red"
                             document.getElementById("sendc").disabled = false
                             document.getElementById("sendc").innerHTML = `Send`
                         }
                         else {
+                            document.getElementById("msgdis").innerText ="sending...."
+                            document.getElementById("msgdis").style.color = "blue"
                             if (cMsg.value == "") cMsg.value = "unknown"
                             if (cPass.value == "") cPass.value = "none"
-                            storageref = stref(storage, cId.value)
-                            uploadBytes(storageref, file).then((snapshot) => {
-                                getDownloadURL(storageref).then((url) => {
-                                    set(ref(db, cId.value), {
-                                        pass: cPass.value,
-                                        msg: cMsg.value,
-                                        link: url
-                                    })
-                                    cMsg.value = ""
-                                    cPass.value = ""
-                                    document.getElementById("msgdis").innerText = `Send Successfully`
-                                    document.getElementById("msgdis").style.color = "green"
-                                    document.getElementById("sendc").disabled = false
-                                    document.getElementById("sendc").innerHTML = `Send`
-                                    file = null
-                                }).catch((e) => {
-                                    document.getElementById("msgdis").innerText = `Something is wrong please try again`
-                                    document.getElementById("msgdis").style.color = "red"
-                                    document.getElementById("sendc").disabled = false
-                                    document.getElementById("sendc").innerHTML = `Send`
-                                })
+                            var countfile = 0
+                            let task = []
+                            for(var i=0;i<filenum;i++){
+                            storageref = stref(storage, cId.value+"/"+files[i].name)
+                            uploadBytes(storageref,files[i]).then((snapshot) => {
+                            countfile = countfile + 1
+                            document.getElementById("msgdis").innerText = countfile+" file sented"
+                            document.getElementById("msgdis").style.color = "blue"
+                            if(countfile == filenum){
+                                    set(ref(db,cId.value),{pass:cPass.value,msg:cMsg.value}).then(()=>{
+                            document.getElementById("msgdis").innerText = `Send Successfully`
+                            document.getElementById("msgdis").style.color = "green"
+                            document.getElementById("sendc").disabled = false
+                            document.getElementById("sendc").innerHTML = `Send`
+                        })
+                                }
+                            }).catch((e)=>{
+                                console.log("error in "+countfile+" file")
                             })
+                        }
                         }
                     })
 
@@ -118,7 +121,12 @@
                     remove(child(ref(db),cId.value)).then(()=>{
                         cPass.value = ""
                         let storageref = stref(storage, cId.value)
-                        deleteObject(storageref)
+                        listAll(storageref).then((res)=>{
+                            res.items.forEach(fileRef =>{
+                                deleteObject(fileRef)
+                          });
+                        })
+                        
                         document.getElementById("msgdis").innerText = `Deleted Successfully`
                         document.getElementById("msgdis").style.color = "green"
                     })
@@ -145,7 +153,11 @@
         }
         }
         cFile.onchange = function getfile(e){
-            file = e.target.files[0];
+            files = e.target.files;
+            filenum = files.length;
+            for(var i=0;i<filenum;i++){
+                filenames[i] = files[i].name
+            }
         }
       </script>
 </body>

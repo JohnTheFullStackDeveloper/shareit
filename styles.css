@@ -104,6 +104,9 @@ body {
 .message-display {
     background: #f9f9f9;
     padding: 15px;
+    display: grid;
+    grid-auto-rows: auto;
+    gap: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1.1em;    

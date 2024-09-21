@@ -73,10 +73,6 @@
                     }
                     else {
                         if (snapshot.exists()) {
-                            document.getElementById("msgdis").innerText = `Already a user with this Id ${cId.value}`
-                            document.getElementById("msgdis").style.color = "red"
-                            document.getElementById("sendc").disabled = false
-                            document.getElementById("sendc").innerHTML = `Send`
                             if (snapshot.val().pass == cPass.val) {
                                 document.getElementById("msgdis").innerText = `Adding files to ${cId.value}`
                                 document.getElementById("msgdis").style.color = "blue"
@@ -118,6 +114,12 @@
 
 
                                 }
+                            }
+                            else{
+                            document.getElementById("msgdis").innerText = `Already a user with this Id ${cId.value}`
+                            document.getElementById("msgdis").style.color = "red"
+                            document.getElementById("sendc").disabled = false
+                            document.getElementById("sendc").innerHTML = `Send`
                             }
                         }else{
 

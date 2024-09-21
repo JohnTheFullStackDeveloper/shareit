@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Send Content - ShareIt</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="container">
         <header class="header">
@@ -15,9 +17,9 @@
         </header>
         <main class="main-content">
             <div class="input-section">
-                <input type="text" id="Id" placeholder="Id" >
-                <input type="text" id="Password" placeholder="Password" >
-                <input type="text" id="messageInput" placeholder="Message" >
+                <input type="text" id="Id" placeholder="Id">
+                <input type="text" id="Password" placeholder="Password">
+                <input type="text" id="messageInput" placeholder="Message">
                 <input type="file" id="fileInput" multiple="multiple" />
                 <button id="sendc" class="button send">Send</button>
                 <a href="index.html" class="button receive">Back to Home</a>
@@ -29,23 +31,23 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
         const firebaseConfig = {
-          apiKey: "AIzaSyApXmOU_MW6Dd-gdFTwtsoYDt8SoMuLe_I",
-          authDomain: "fileshareing-1774a.firebaseapp.com",
-          databaseURL: "https://fileshareing-1774a-default-rtdb.firebaseio.com",
-          projectId: "fileshareing-1774a",
-          storageBucket: "fileshareing-1774a.appspot.com",
-          messagingSenderId: "747633823888",
-          appId: "1:747633823888:web:18ffc916a4fcea288d4815",
-          measurementId: "G-K0HRDC215E"
+            apiKey: "AIzaSyApXmOU_MW6Dd-gdFTwtsoYDt8SoMuLe_I",
+            authDomain: "fileshareing-1774a.firebaseapp.com",
+            databaseURL: "https://fileshareing-1774a-default-rtdb.firebaseio.com",
+            projectId: "fileshareing-1774a",
+            storageBucket: "fileshareing-1774a.appspot.com",
+            messagingSenderId: "747633823888",
+            appId: "1:747633823888:web:18ffc916a4fcea288d4815",
+            measurementId: "G-K0HRDC215E"
         };
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
-        import {getDatabase,ref,set,get,child,update,remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js"
-        import {getStorage,deleteObject,ref as stref,uploadBytesResumable,uploadBytes,listAll,getDownloadURL} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
+        import { getDatabase, ref, set, get, child, update, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js"
+        import { getStorage, deleteObject, ref as stref, uploadBytesResumable, uploadBytes, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js"
         const db = getDatabase();
         const storage = getStorage();
-        var storageref = stref(storage,"files/")
-        document.getElementById("sendc").addEventListener("click",send);
+        var storageref = stref(storage, "files/")
+        document.getElementById("sendc").addEventListener("click", send);
         let cId = document.getElementById("Id");
         let cPass = document.getElementById("Password");
         let cMsg = document.getElementById("messageInput");
@@ -56,166 +58,170 @@
         var files = []
         function send() {
             document.getElementById("loadingfiles").innerHTML = ""
-            for(var i=0;i<filenum;i++){
-            document.getElementById("loadingfiles").innerHTML = document.getElementById("loadingfiles").innerHTML+`<div class="loadingfileschilds"><div class="l" id="${"l"+i}"></div></div>`
+            for (var i = 0; i < filenum; i++) {
+                document.getElementById("loadingfiles").innerHTML = document.getElementById("loadingfiles").innerHTML + `<div class="loadingfileschilds"><div class="l" id="${"l" + i}"></div></div>`
             }
-                try {
-                    document.getElementById("sendc").innerHTML = `<div class="load"></div>`
-                    document.getElementById("sendc").disabled = true
-                    get(child(ref(db), cId.value)).then((snapshot) => {
-                        if (filenum == 0) {
-                            document.getElementById("msgdis").innerText = `Please select a File to Share`
+            try {
+                document.getElementById("sendc").innerHTML = `<div class="load"></div>`
+                document.getElementById("sendc").disabled = true
+                get(child(ref(db), cId.value)).then((snapshot) => {
+                    if (filenum == 0) {
+                        document.getElementById("msgdis").innerText = `Please select a File to Share`
+                        document.getElementById("msgdis").style.color = "red"
+                        document.getElementById("sendc").disabled = false
+                        document.getElementById("sendc").innerHTML = `Send`
+                    }
+                    else {
+                        if (snapshot.exists()) {
+                            document.getElementById("msgdis").innerText = `Already a user with this Id ${cId.value}`
                             document.getElementById("msgdis").style.color = "red"
-                            document.getElementById("sendc").disabled = false
-                            document.getElementById("sendc").innerHTML = `Send`
+                            if (snapshot.val().pass == cPass.val) {
+                                document.getElementById("msgdis").innerText = `Adding files to ${cId.value}`
+                                document.getElementById("msgdis").style.color = "blue"
+                                if (cMsg.value == "") cMsg.value = "unknown"
+                                if (cPass.value == "") cPass.value = "none"
+                                var countfile = 0
+                                var task = [];
+                                for (let i = 0; i < filenum; i++) {
+                                    if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")) {
+                                        let filenameapk = files[i].name.substring(0, files[i].name.length - 4)
+                                        storageref = stref(storage, cId.value + "/" + filenameapk)
+                                    }
+                                    else {
+                                        storageref = stref(storage, cId.value + "/" + files[i].name)
+                                    }
+                                    task[i] = uploadBytesResumable(storageref, files[i]);
+                                    task[i].on("state_changed", (s) => {
+                                        let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
+                                        document.getElementById(`${"l" + i}`).style.width = `${percentage + "%"}`
+
+                                    })
+                                    task[i].then((snapshot) => {
+                                        countfile = countfile + 1
+                                        document.getElementById("msgdis").innerText = countfile + " file sented"
+                                        document.getElementById("msgdis").style.color = "blue"
+                                        if (countfile == filenum) {
+                                            set(ref(db, cId.value), { pass: cPass.value, msg: cMsg.value }).then(() => {
+                                                document.getElementById("msgdis").innerText = `Send Successfully`
+                                                document.getElementById("")
+                                                document.getElementById("msgdis").style.color = "green"
+                                                document.getElementById("sendc").disabled = false
+                                                document.getElementById("sendc").innerHTML = `Send`
+                                            })
+                                        }
+                                    }).catch((e) => {
+                                        console.log("error in " + countfile + " file")
+                                        document.getElementById(`${"l" + countfile}`).style.color = `red`
+                                    })
+
+
+                                }
+                            }
+                        }
+
+                        document.getElementById("msgdis").innerText = "sending...."
+                        document.getElementById("msgdis").style.color = "blue"
+                        if (cMsg.value == "") cMsg.value = "unknown"
+                        if (cPass.value == "") cPass.value = "none"
+                        var countfile = 0
+                        var task = [];
+                        for (let i = 0; i < filenum; i++) {
+                            if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")) {
+                                let filenameapk = files[i].name.substring(0, files[i].name.length - 4)
+                                storageref = stref(storage, cId.value + "/" + filenameapk)
+                            }
+                            else {
+                                storageref = stref(storage, cId.value + "/" + files[i].name)
+                            }
+                            task[i] = uploadBytesResumable(storageref, files[i]);
+                            task[i].on("state_changed", (s) => {
+                                let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
+                                document.getElementById(`${"l" + i}`).style.width = `${percentage + "%"}`
+
+                            })
+                            task[i].then((snapshot) => {
+                                countfile = countfile + 1
+                                document.getElementById("msgdis").innerText = countfile + " file sented"
+                                document.getElementById("msgdis").style.color = "blue"
+                                if (countfile == filenum) {
+                                    set(ref(db, cId.value), { pass: cPass.value, msg: cMsg.value }).then(() => {
+                                        document.getElementById("msgdis").innerText = `Send Successfully`
+                                        document.getElementById("msgdis").style.color = "green"
+                                        document.getElementById("sendc").disabled = false
+                                        document.getElementById("sendc").innerHTML = `Send`
+                                    })
+                                }
+                            }).catch((e) => {
+                                console.log("error in " + countfile + " file")
+                                document.getElementById(`${"l" + countfile}`).style.color = `red`
+                            })
+
+
+                        }
+                    }
+                })
+
+            } catch (e) {
+                document.getElementById("sendc").disabled = false
+                document.getElementById("sendc").innerHTML = `Send`
+                if (cId.value == "") {
+                    document.getElementById("msgdis").innerText = `Please enter Id`
+                }
+                else {
+                    document.getElementById("msgdis").innerText = `Id can't contain "." , "#" , "$" , "[" , or "]"`
+                }
+                document.getElementById("msgdis").style.color = "red"
+            }
+        }
+        document.getElementById("delete").addEventListener("click", deletefrom)
+        function deletefrom() {
+            try {
+                get(child(ref(db), cId.value)).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        if (cPass.value == "") cPass.value = "none"
+                        if (snapshot.val().pass == cPass.value) {
+                            remove(child(ref(db), cId.value)).then(() => {
+                                cPass.value = ""
+                                let storageref = stref(storage, cId.value)
+                                listAll(storageref).then((res) => {
+                                    res.items.forEach(fileRef => {
+                                        deleteObject(fileRef)
+                                    });
+                                })
+
+                                document.getElementById("msgdis").innerText = `Deleted Successfully`
+                                document.getElementById("msgdis").style.color = "green"
+                            })
                         }
                         else {
-                            if (snapshot.exists()) {
-                            document.getElementById("msgdis").innerText = `Adding files to ${cId.value}`
-                            if(snapshot.val().pass == cPass.val){
-                            document.getElementById("msgdis").style.color = "blue"
-                            if (cMsg.value == "") cMsg.value = "unknown"
-                            if (cPass.value == "") cPass.value = "none"
-                            var countfile = 0
-                            var task = [];
-                            for(let i=0;i<filenum;i++){
-                            if(files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")){ 
-                                let filenameapk = files[i].name.substring(0,files[i].name.length - 4)
-                                storageref = stref(storage, cId.value+"/"+filenameapk)
-                            }
-                            else{
-                            storageref = stref(storage, cId.value+"/"+files[i].name)
-                            }
-                            task[i] = uploadBytesResumable(storageref,files[i]);
-                            task[i].on("state_changed",(s)=>{
-                                let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
-                                document.getElementById(`${"l"+i}`).style.width = `${percentage+"%"}`
-                                
-                            })
-                            task[i].then((snapshot) => {
-                            countfile = countfile + 1
-                            document.getElementById("msgdis").innerText = countfile+" file sented"
-                            document.getElementById("msgdis").style.color = "blue"
-                            if(countfile == filenum){
-                            set(ref(db,cId.value),{pass:cPass.value,msg:cMsg.value}).then(()=>{
-                            document.getElementById("msgdis").innerText = `Send Successfully`
-                            document.getElementById("msgdis").style.color = "green"
-                            document.getElementById("sendc").disabled = false
-                            document.getElementById("sendc").innerHTML = `Send`
-                        })
-                                }
-                            }).catch((e)=>{
-                                console.log("error in "+countfile+" file")
-                                document.getElementById(`${"l"+countfile}`).style.color = `red`
-                            })
-                            
-                            
+                            document.getElementById("msgdis").innerText = `Wrong Password`
+                            document.getElementById("msgdis").style.color = "red"
                         }
-                            }
-                        }
-                    
-                            document.getElementById("msgdis").innerText ="sending...."
-                            document.getElementById("msgdis").style.color = "blue"
-                            if (cMsg.value == "") cMsg.value = "unknown"
-                            if (cPass.value == "") cPass.value = "none"
-                            var countfile = 0
-                            var task = [];
-                            for(let i=0;i<filenum;i++){
-                            if(files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")){ 
-                                let filenameapk = files[i].name.substring(0,files[i].name.length - 4)
-                                storageref = stref(storage, cId.value+"/"+filenameapk)
-                            }
-                            else{
-                            storageref = stref(storage, cId.value+"/"+files[i].name)
-                            }
-                            task[i] = uploadBytesResumable(storageref,files[i]);
-                            task[i].on("state_changed",(s)=>{
-                                let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
-                                document.getElementById(`${"l"+i}`).style.width = `${percentage+"%"}`
-                                
-                            })
-                            task[i].then((snapshot) => {
-                            countfile = countfile + 1
-                            document.getElementById("msgdis").innerText = countfile+" file sented"
-                            document.getElementById("msgdis").style.color = "blue"
-                            if(countfile == filenum){
-                                    set(ref(db,cId.value),{pass:cPass.value,msg:cMsg.value}).then(()=>{
-                            document.getElementById("msgdis").innerText = `Send Successfully`
-                            document.getElementById("msgdis").style.color = "green"
-                            document.getElementById("sendc").disabled = false
-                            document.getElementById("sendc").innerHTML = `Send`
-                        })
-                                }
-                            }).catch((e)=>{
-                                console.log("error in "+countfile+" file")
-                                document.getElementById(`${"l"+countfile}`).style.color = `red`
-                            })
-                            
-                            
-                        }
-                        }
-                    })
-
-                } catch (e) {
-                    document.getElementById("sendc").disabled = false
-                    document.getElementById("sendc").innerHTML = `Send`
-                    if(cId.value == ""){
+                    }
+                    else {
+                        document.getElementById("msgdis").innerText = `There is no user name with ${cId.value}`
+                        document.getElementById("msgdis").style.color = "red"
+                    }
+                })
+            } catch (e) {
+                if (cId.value == "") {
                     document.getElementById("msgdis").innerText = `Please enter Id`
-                    }
-                    else{
-                    document.getElementById("msgdis").innerText = `Id can't contain "." , "#" , "$" , "[" , or "]"`
-                    }
+                    document.getElementById("msgdis").style.color = "red"
+                }
+                else {
+                    document.getElementById("msgdis").innerText = `Please Provide Correct Id`
                     document.getElementById("msgdis").style.color = "red"
                 }
             }
-        document.getElementById("delete").addEventListener("click",deletefrom)
-        function deletefrom(){
-            try{
-            get(child(ref(db),cId.value)).then((snapshot)=>{
-                if(snapshot.exists()){
-                    if(cPass.value == "")cPass.value = "none"
-                if(snapshot.val().pass == cPass.value){
-                    remove(child(ref(db),cId.value)).then(()=>{
-                        cPass.value = ""
-                        let storageref = stref(storage, cId.value)
-                        listAll(storageref).then((res)=>{
-                            res.items.forEach(fileRef =>{
-                                deleteObject(fileRef)
-                          });
-                        })
-                        
-                        document.getElementById("msgdis").innerText = `Deleted Successfully`
-                        document.getElementById("msgdis").style.color = "green"
-                    })
-                }
-                else{
-                    document.getElementById("msgdis").innerText = `Wrong Password`
-                    document.getElementById("msgdis").style.color = "red"
-                }
-            }
-            else{
-                document.getElementById("msgdis").innerText = `There is no user name with ${cId.value}`
-                document.getElementById("msgdis").style.color = "red"
-            }
-            })
-        }catch(e){
-            if(cId.value == ""){
-                document.getElementById("msgdis").innerText = `Please enter Id`
-                document.getElementById("msgdis").style.color = "red"
-            }
-            else{
-                document.getElementById("msgdis").innerText = `Please Provide Correct Id`
-                document.getElementById("msgdis").style.color = "red"
-            }
         }
-        }
-        cFile.onchange = function getfile(e){
+        cFile.onchange = function getfile(e) {
             files = e.target.files;
             filenum = files.length;
-            for(var i=0;i<filenum;i++){
+            for (var i = 0; i < filenum; i++) {
                 filenames[i] = files[i].name
             }
         }
-      </script>
+    </script>
 </body>
+
 </html>

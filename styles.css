@@ -19,7 +19,29 @@ body {
     text-align: center;
 }
 
-/* Header Styles */
+#loadingfiles{
+    margin-top: 10px;
+    background-color: white;
+    display: grid;
+    gap: 10px;
+    width: 100%;
+}
+
+.loadingfileschilds{
+    width: 100%;
+    height: 10px;
+    background-color: rgba(110, 110, 202, 0.1);
+    border-radius: 14px;
+    text-align: end;
+}
+
+.l{
+    background: #45a049;
+    height: 100%;
+    width: 0%;
+    border-radius: 14px;
+}
+
 .header {
     margin-bottom: 20px;
 }

@@ -10,6 +10,7 @@
     <div class="container">
         <header class="header">
             <h1>Send Content</h1>
+            <div id="loadingfiles"></div>
             <p id="msgdis">Share files and messages instantly!</p>
         </header>
         <main class="main-content">
@@ -54,33 +55,86 @@
         var filenames = [];
         var files = []
         function send() {
-
+            document.getElementById("loadingfiles").innerHTML = ""
+            for(var i=0;i<filenum;i++){
+            document.getElementById("loadingfiles").innerHTML = document.getElementById("loadingfiles").innerHTML+`<div class="loadingfileschilds"><div class="l" id="${"l"+i}"></div></div>`
+            }
                 try {
                     document.getElementById("sendc").innerHTML = `<div class="load"></div>`
                     document.getElementById("sendc").disabled = true
                     get(child(ref(db), cId.value)).then((snapshot) => {
-                        if (snapshot.exists()) {
-                            document.getElementById("msgdis").innerText = `already a user with ${cId.value}`
-                            document.getElementById("msgdis").style.color = "red"
-                            document.getElementById("sendc").disabled = false
-                            document.getElementById("sendc").innerHTML = `Send`
-                        }
-                        else if (filenum == 0) {
+                        if (filenum == 0) {
                             document.getElementById("msgdis").innerText = `Please select a File to Share`
                             document.getElementById("msgdis").style.color = "red"
                             document.getElementById("sendc").disabled = false
                             document.getElementById("sendc").innerHTML = `Send`
                         }
                         else {
+                            if (snapshot.exists()) {
+                            document.getElementById("msgdis").innerText = `Adding files to ${cId.value}`
+                            if(snapshot.val().pass == cPass.val){
+                            document.getElementById("msgdis").style.color = "blue"
+                            if (cMsg.value == "") cMsg.value = "unknown"
+                            if (cPass.value == "") cPass.value = "none"
+                            var countfile = 0
+                            var task = [];
+                            for(let i=0;i<filenum;i++){
+                            if(files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")){ 
+                                let filenameapk = files[i].name.substring(0,files[i].name.length - 4)
+                                storageref = stref(storage, cId.value+"/"+filenameapk)
+                            }
+                            else{
+                            storageref = stref(storage, cId.value+"/"+files[i].name)
+                            }
+                            task[i] = uploadBytesResumable(storageref,files[i]);
+                            task[i].on("state_changed",(s)=>{
+                                let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
+                                document.getElementById(`${"l"+i}`).style.width = `${percentage+"%"}`
+                                
+                            })
+                            task[i].then((snapshot) => {
+                            countfile = countfile + 1
+                            document.getElementById("msgdis").innerText = countfile+" file sented"
+                            document.getElementById("msgdis").style.color = "blue"
+                            if(countfile == filenum){
+                            set(ref(db,cId.value),{pass:cPass.value,msg:cMsg.value}).then(()=>{
+                            document.getElementById("msgdis").innerText = `Send Successfully`
+                            document.getElementById("msgdis").style.color = "green"
+                            document.getElementById("sendc").disabled = false
+                            document.getElementById("sendc").innerHTML = `Send`
+                        })
+                                }
+                            }).catch((e)=>{
+                                console.log("error in "+countfile+" file")
+                                document.getElementById(`${"l"+countfile}`).style.color = `red`
+                            })
+                            
+                            
+                        }
+                            }
+                        }
+                    
                             document.getElementById("msgdis").innerText ="sending...."
                             document.getElementById("msgdis").style.color = "blue"
                             if (cMsg.value == "") cMsg.value = "unknown"
                             if (cPass.value == "") cPass.value = "none"
                             var countfile = 0
-                            let task = []
-                            for(var i=0;i<filenum;i++){
+                            var task = [];
+                            for(let i=0;i<filenum;i++){
+                            if(files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")){ 
+                                let filenameapk = files[i].name.substring(0,files[i].name.length - 4)
+                                storageref = stref(storage, cId.value+"/"+filenameapk)
+                            }
+                            else{
                             storageref = stref(storage, cId.value+"/"+files[i].name)
-                            uploadBytes(storageref,files[i]).then((snapshot) => {
+                            }
+                            task[i] = uploadBytesResumable(storageref,files[i]);
+                            task[i].on("state_changed",(s)=>{
+                                let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
+                                document.getElementById(`${"l"+i}`).style.width = `${percentage+"%"}`
+                                
+                            })
+                            task[i].then((snapshot) => {
                             countfile = countfile + 1
                             document.getElementById("msgdis").innerText = countfile+" file sented"
                             document.getElementById("msgdis").style.color = "blue"
@@ -94,7 +148,10 @@
                                 }
                             }).catch((e)=>{
                                 console.log("error in "+countfile+" file")
+                                document.getElementById(`${"l"+countfile}`).style.color = `red`
                             })
+                            
+                            
                         }
                         }
                     })

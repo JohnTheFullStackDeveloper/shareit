@@ -68,7 +68,8 @@
                             res.items.forEach((file)=>{
                                 getDownloadURL(file).then((url)=>{
                                 document.getElementById("message-display").style.visibility='visible'
-                                document.getElementById("message-display").innerHTML = document.getElementById("message-display").innerHTML +`<a target="_blank" href="${url}" download>${file.name}</a>`
+                                if(file.name.indexOf(".")!=-1) document.getElementById("message-display").innerHTML = document.getElementById("message-display").innerHTML +`<div class="filesin"><a href="${url}" target="_blank"><embed class="embedclass" src="${url}" width="100%" height="200px"></a><a target="_blank" href="${url}">${file.name}</a></div>`
+                                else document.getElementById("message-display").innerHTML = document.getElementById("message-display").innerHTML + `<div class="filesin"><a href="${url}" targe="_blank"><img src="file.png" width=100% height=200px></a><a targe="_blank" href="${url}">${file.name}</a></div>`
                                 })
                             })
                         })

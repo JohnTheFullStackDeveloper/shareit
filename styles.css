@@ -124,18 +124,20 @@ body {
 
 .message-display {
     background: #f9f9f9;
-    padding: 15px;
     display: grid;
-    grid-auto-rows: auto;
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1.1em;    
+    border-radius: 4px;  
     color: #333;
-    text-align: left;
     word-break: break-word;
 }
-
+a{
+   color: black;
+   text-decoration: none;
+}
+.embedclass{
+    object-fit:cover;
+}
 .message-displayr input{
     width: calc(100% - 160px);
     padding: 10px;

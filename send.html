@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Send Content - ShareIt</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
     <div class="container">
         <header class="header">
@@ -52,7 +50,6 @@
         let cPass = document.getElementById("Password");
         let cMsg = document.getElementById("messageInput");
         let cFile = document.getElementById("fileInput");
-
         var filenum = 0;
         var filenames = [];
         var files = []
@@ -81,7 +78,7 @@
                                 var countfile = 0
                                 var task = [];
                                 for (let i = 0; i < filenum; i++) {
-                                    if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")) {
+                                    if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk") || files[i].name.endsWith(".exe") || files[i].name.endsWith(".Exe")) {
                                         let filenameapk = files[i].name.substring(0, files[i].name.length - 4)
                                         storageref = stref(storage, cId.value + "/" + filenameapk)
                                     }
@@ -91,8 +88,11 @@
                                     task[i] = uploadBytesResumable(storageref, files[i]);
                                     task[i].on("state_changed", (s) => {
                                         let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
+                                        document.getElementById(`${"l" + i}`).style.backgroundColor = "rgb(107, 107, 218)"
+                                        if(percentage == 100){
+                                        document.getElementById(`${"l" + i}`).style.backgroundColor = "green"
+                                        }
                                         document.getElementById(`${"l" + i}`).style.width = `${percentage + "%"}`
-
                                     })
                                     task[i].then((snapshot) => {
                                         countfile = countfile + 1
@@ -101,28 +101,27 @@
                                         if (countfile == filenum) {
                                             set(ref(db, cId.value), { pass: cPass.value, msg: cMsg.value }).then(() => {
                                                 document.getElementById("msgdis").innerText = `Send Successfully`
-
+                                                document.getElementById("loadingfiles").innerHTML = ""
                                                 document.getElementById("msgdis").style.color = "green"
                                                 document.getElementById("sendc").disabled = false
                                                 document.getElementById("sendc").innerHTML = `Send`
                                             })
                                         }
                                     }).catch((e) => {
-                                        console.log("error in " + countfile + " file")
+                                        document.getElementById("msgdis").innerText = "error in " + countfile + " file"
+                                        document.getElementById("msgdis").style.color = "red"
                                         document.getElementById(`${"l" + countfile}`).style.color = `red`
                                     })
-
-
                                 }
                             }
                             else {
                                 document.getElementById("msgdis").innerText = `Already a user with this Id ${cId.value}`
                                 document.getElementById("msgdis").style.color = "red"
+                                document.getElementById("loadingfiles").innerHTML = ""
                                 document.getElementById("sendc").disabled = false
                                 document.getElementById("sendc").innerHTML = `Send`
                             }
                         } else {
-
                             document.getElementById("msgdis").innerText = "sending...."
                             document.getElementById("msgdis").style.color = "blue"
                             if (cMsg.value == "") cMsg.value = "unknown"
@@ -140,8 +139,11 @@
                                 task[i] = uploadBytesResumable(storageref, files[i]);
                                 task[i].on("state_changed", (s) => {
                                     let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)
+                                        document.getElementById(`${"l" + i}`).style.backgroundColor = "rgb(107, 107, 218)"
+                                        if(percentage == 100){
+                                        document.getElementById(`${"l" + i}`).style.color = "green"
+                                    }
                                     document.getElementById(`${"l" + i}`).style.width = `${percentage + "%"}`
-
                                 })
                                 task[i].then((snapshot) => {
                                     countfile = countfile + 1
@@ -150,22 +152,21 @@
                                     if (countfile == filenum) {
                                         set(ref(db, cId.value), { pass: cPass.value, msg: cMsg.value }).then(() => {
                                             document.getElementById("msgdis").innerText = `Send Successfully`
+                                            document.getElementById("loadingfiles").innerHTML = ""
                                             document.getElementById("msgdis").style.color = "green"
                                             document.getElementById("sendc").disabled = false
                                             document.getElementById("sendc").innerHTML = `Send`
                                         })
                                     }
                                 }).catch((e) => {
-                                    console.log("error in " + countfile + " file")
+                                    document.getElementById("msgdis").innerText = "error in " + countfile + " file"
+                                    document.getElementById("msgdis").style.color = "red"
                                     document.getElementById(`${"l" + countfile}`).style.color = `red`
                                 })
-
-
                             }
                         }
                     }
                 })
-
             } catch (e) {
                 document.getElementById("sendc").disabled = false
                 document.getElementById("sendc").innerHTML = `Send`
@@ -193,7 +194,6 @@
                                         deleteObject(fileRef)
                                     });
                                 })
-
                                 document.getElementById("msgdis").innerText = `Deleted Successfully`
                                 document.getElementById("msgdis").style.color = "green"
                             })
@@ -228,5 +228,4 @@
         }
     </script>
 </body>
-
 </html>

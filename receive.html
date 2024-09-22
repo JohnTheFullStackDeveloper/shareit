@@ -75,8 +75,7 @@
                                             let fn = ""
                                             fn = file.name.replace(/dot/g,".")
                                             console.log(fn)
-                                            document.getElementById("message-display").innerHTML = document.getElementById("message-display").innerHTML + `<div class="filesin"><a id="${fn}"><img src="file.png" width=100% height=200px></a><a>${fn}</a></div>`   
-                                            fetch(url).then(res => blob().then(blob => console.log(blob)))
+                                            document.getElementById("message-display").innerHTML = document.getElementById("message-display").innerHTML + `<div class="filesin"><a id="${fn}" href="${url}" target="_blank" download="${fn}"><img src="file.png" width=100% height=200px></a><a href="${url}" target="_blank">${fn}</a></div>`   
                                         }
                                         else document.getElementById("message-display").innerHTML = document.getElementById("message-display").innerHTML + `<div class="filesin"><a href="${url}" target="_blank"><embed class="embedclass" src="${url}" width="100%" height="200px"></a><a target="_blank" href="${url}">${file.name}</a></div>`
                                     })

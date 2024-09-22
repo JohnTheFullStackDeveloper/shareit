@@ -79,7 +79,11 @@
                                 var task = [];
                                 for (let i = 0; i < filenum; i++) {
                                     if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk") || files[i].name.endsWith(".exe") || files[i].name.endsWith(".Exe")) {
-                                        let filenameapk = files[i].name.substring(0, files[i].name.length - 4)
+                                        let filenameapk = files[i].name
+                                        let lastdot = filenameapk.lastIndexOf('.')
+                                        if(lastdot != -1){
+                                            filenameapk = filenameapk.slice(0,lastdot) + "dot"+filenameapk.slice(lastdot+1)
+                                        }
                                         storageref = stref(storage, cId.value + "/" + filenameapk)
                                     }
                                     else {
@@ -130,12 +134,17 @@
                             var task = [];
                             for (let i = 0; i < filenum; i++) {
                                 if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")) {
-                                    let filenameapk = files[i].name.substring(0, files[i].name.length - 4)
+                                    let filenameapk = files[i].name
+                                    let lastdot = filenameapk.lastIndexOf('.')
+                                        if(lastdot != -1){
+                                            filenameapk = filenameapk.slice(0,lastdot) + "dot"+filenameapk.slice(lastdot+1)
+                                        }
                                     storageref = stref(storage, cId.value + "/" + filenameapk)
                                 }
                                 else {
                                     storageref = stref(storage, cId.value + "/" + files[i].name)
                                 }
+                                
                                 task[i] = uploadBytesResumable(storageref, files[i]);
                                 task[i].on("state_changed", (s) => {
                                     let percentage = Math.floor((s.bytesTransferred / s.totalBytes) * 100)

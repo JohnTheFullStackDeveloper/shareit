@@ -11,7 +11,7 @@
         <header class="header">
             <h1>Send Content</h1>
             <div id="loadingfiles"></div>
-            <p id="msgdis">Share files and messages instantly!</p>
+            <div id="msgdis">Share files and messages instantly!</div>
         </header>
         <main class="main-content">
             <div class="input-section">
@@ -126,7 +126,7 @@
                                 document.getElementById("sendc").innerHTML = `Send`
                             }
                         } else {
-                            document.getElementById("msgdis").innerText = "sending...."
+                            document.getElementById("msgdis").innerHTML = `<div class="sendingloader"></div>`
                             document.getElementById("msgdis").style.color = "blue"
                             if (cMsg.value == "") cMsg.value = "unknown"
                             if (cPass.value == "") cPass.value = "none"

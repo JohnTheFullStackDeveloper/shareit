@@ -71,7 +71,7 @@
                     else {
                         if (snapshot.exists()) {
                             if (snapshot.val().pass == cPass.value) {
-                                document.getElementById("msgdis").innerText = `Adding files to ${cId.value}`
+                                document.getElementById("msgdis").innerHTML = `<div class="sendingloader"></div>`
                                 document.getElementById("msgdis").style.color = "blue"
                                 if (cMsg.value == "") cMsg.value = "unknown"
                                 if (cPass.value == "") cPass.value = "none"

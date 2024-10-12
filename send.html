@@ -133,14 +133,14 @@
                             var countfile = 0
                             var task = [];
                             for (let i = 0; i < filenum; i++) {
-                                if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk")) {
-                                    let filenameapk = files[i].name
-                                    let lastdot = filenameapk.lastIndexOf('.')
+                                if (files[i].name.endsWith(".apk") || files[i].name.endsWith(".Apk") || files[i].name.endsWith(".exe") || files[i].name.endsWith(".Exe")) {
+                                        let filenameapk = files[i].name
+                                        let lastdot = filenameapk.lastIndexOf('.')
                                         if(lastdot != -1){
                                             filenameapk = filenameapk.slice(0,lastdot) + "dot"+filenameapk.slice(lastdot+1)
                                         }
-                                    storageref = stref(storage, cId.value + "/" + filenameapk)
-                                }
+                                        storageref = stref(storage, cId.value + "/" + filenameapk)
+                                    }
                                 else {
                                     storageref = stref(storage, cId.value + "/" + files[i].name)
                                 }

@@ -41,7 +41,7 @@ body {
     background: rgb(107, 107, 218);
     height: 100%;
     width: 0%;
-    transition: width 5s;
+    transition: width 1s;
     border-radius: 14px;
 }
 
@@ -150,8 +150,6 @@ a{
     font-size: 1em;
     margin-bottom: 10px;
 }
-
-
 
 
 /* HTML: <div class="loader"></div> */

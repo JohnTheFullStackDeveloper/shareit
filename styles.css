@@ -140,6 +140,7 @@ a{
 }
 .embedclass{
     object-fit:cover;
+    overflow: auto;
 }
 .message-displayr input{
     width: calc(100% - 160px);
@@ -171,12 +172,15 @@ a{
     16.67% {background-position: 0%  200%,50%  200%,100%   50%}
     0%   {background-position: 0%  200%,50%  200%,100%  200%}
   }
-
+.dow:hover{
+    cursor: pointer;
+}
 #msgdis{
     margin-top: 10px;
     display: grid;
     place-items: center;
 }
+
 .sendingloader {
     --w:10ch;
     font-weight: bold;
